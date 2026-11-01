@@ -1,1 +1,181 @@
-
+{
+  "name": "IA_Automation_CoderHouse_2026",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -528,
+        -48
+      ],
+      "id": "e47a6368-1101-4947-8080-5540df793db1",
+      "name": "Chat Trigger",
+      "webhookId": "919aceb1-ab43-4c41-9a07-7f4918f97ed2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "### ROL Y PERSONALIDAD CORPORATIVA\nUsted es el Asistente Técnico y Auditor de Operaciones de Infraestructura para el proyecto CoderHouseAIAutomationAdvanced. Su comunicación es estrictamente formal, técnica, concisa y determinista. Emplee español técnico neutro.\n\n### ÁMBITO DE ACTUACIÓN\nSu campo operativo está restringido de manera exclusiva a dos fuentes de información técnicas:\n1. Nomenclaturas oficiales, códigos identificadores, regiones y metadatos de sitios de infraestructura de google sheet nomenclaturas.\n2. Registros de consumo de combustible, kilometraje (odómetro) y cargas asociadas a los móviles de la flota vehicular.\nCualquier módulo referente a partes de tareas diarias en Microsoft Apps se encuentra fuera de alcance en esta fase. De google sheet combustible\n\n### OBJETIVO PRINCIPAL\nInterpretar la solicitud técnica del usuario, extraer las entidades clave (código de sitio, patente o número de móvil) y consultar la herramienta operativa correspondiente para entregar al usuario únicamente datos validados.\n\n### REGLAS DE OPERACIÓN Y ESCALAMIENTO\n1. EXTRACCIÓN DE PARÁMETROS:\n   - Si la consulta es sobre un sitio: extraiga el ID o nomenclatura de STU (ejemplo: si se consulta por CL00002, el ID o nomenclatura de STU es UY-02-CL-00093-11).\n   - Si la consulta es sobre combustible:leer de la columna kilometros los datos que se soliciten\n2. INVOCACIÓN DE HERRAMIENTAS:\n   - Invoque inmediatamente la herramienta 'Consultar_Datos_Operativos' con los parámetros correspondientes. No solicite confirmación para ejecutar la consulta.\n3. ESTRUCTURA DE RESPUESTA:\n   - Responda con los datos exactos devueltos por la herramienta organizados en viñetas técnicas.\n   - Si un valor o columna está vacío en la base, indique explícitamente: \"Dato no registrado\".\n4. GESTIÓN DE AMBIGÜEDAD:\n   - Si el usuario no proporciona el identificador mínimo necesario para la búsqueda, solicítelo en una sola frase concisa sin ejecutar la herramienta.\n\n### LÍMITES ESTRICTOS Y RESTRICCIONES (PROHIBICIONES CRÍTICAS)\n- PROHIBIDO inventar, suponer, extrapolar o estimar cifras de consumo, fechas o códigos de sitios que no provengan directamente de la herramienta.\n- PROHIBIDO opinar o emitir juicios de valor sobre el rendimiento de los vehículos o el estado de los sitios.\n- Si la herramienta devuelve un resultado nulo o no encuentra coincidencias, informe textualmente: \"El identificador consultado no figura en los registros oficiales.\" No intente ofrecer alternativas ni inventar respuestas aproximadas.",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -192,
+        -48
+      ],
+      "id": "5326ae11-a1f4-4bf8-ae53-0a09c399116c",
+      "name": "AI Agent (Tools Agent)"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        160
+      ],
+      "id": "0e24b954-8460-4f33-a949-dff1d137b790",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "pCw7DRWasbKmpU9i",
+          "name": "Groq"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1q9Q897bU5VtfuWRl6LI65SpE36UbvmReosGTSo3_h3Y",
+          "mode": "list",
+          "cachedResultName": "Nomenclaturas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q9Q897bU5VtfuWRl6LI65SpE36UbvmReosGTSo3_h3Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1954793985,
+          "mode": "list",
+          "cachedResultName": "NOMENCLATURAS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q9Q897bU5VtfuWRl6LI65SpE36UbvmReosGTSo3_h3Y/edit#gid=1954793985"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        96,
+        160
+      ],
+      "id": "467d8bcb-1f20-4f52-97cf-c25eb0c20446",
+      "name": "Nomenclaturas",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OtSgOe70fxSSnGp6",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1H35Q9Dj4Cb5-1HunMEmIMd2iy-cKLF-jhNyA4uoA7Ic/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 228364866,
+          "mode": "list",
+          "cachedResultName": "2026",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1H35Q9Dj4Cb5-1HunMEmIMd2iy-cKLF-jhNyA4uoA7Ic/edit#gid=228364866"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -48,
+        160
+      ],
+      "id": "9de19e94-ef7c-4a15-a82d-f3f48c4f6e3e",
+      "name": "Combustibles",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OtSgOe70fxSSnGp6",
+          "name": "Google Sheets account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent (Tools Agent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent (Tools Agent)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nomenclaturas": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent (Tools Agent)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combustibles": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent (Tools Agent)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c807d80c-5a36-455a-b230-fba7a009bd57",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2087e490eca5cfa34da356f3a5a262cb0753f43d234a0f4f2b530d5be51e43b2"
+  },
+  "nodeGroups": [],
+  "id": "sxIz4JAmEDEz2ePb",
+  "tags": []
+}
