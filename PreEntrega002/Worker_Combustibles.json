@@ -1,0 +1,139 @@
+{
+  "name": "Worker_Combustibles",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            { "name": "consulta" },
+            { "name": "identificador" },
+            { "name": "session_id" }
+          ]
+        }
+      },
+      "id": "b2000002-0000-4000-8000-000000000001",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1H35Q9Dj4Cb5-1HunMEmIMd2iy-cKLF-jhNyA4uoA7Ic",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 228364866,
+          "mode": "list",
+          "cachedResultName": "2026"
+        },
+        "options": {}
+      },
+      "id": "b2000002-0000-4000-8000-000000000002",
+      "name": "Leer Combustibles",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [240, 0],
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "googleSheetsOAuth2Api": { "id": "OtSgOe70fxSSnGp6", "name": "Google Sheets account 2" }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "f2000002-0000-4000-8000-000000000001",
+              "leftValue": "={{ $('Execute Workflow Trigger').first().json.identificador !== '' && JSON.stringify($json).toLowerCase().includes($('Execute Workflow Trigger').first().json.identificador.toLowerCase()) }}",
+              "rightValue": "",
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b2000002-0000-4000-8000-000000000003",
+      "name": "Filtrar Coincidencias",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [480, -100]
+    },
+    {
+      "parameters": { "maxItems": 5 },
+      "id": "b2000002-0000-4000-8000-000000000004",
+      "name": "Limitar a 5",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [700, -100]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "data",
+        "options": {}
+      },
+      "id": "b2000002-0000-4000-8000-000000000005",
+      "name": "Agrupar Resultado",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [920, -100],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "s1", "name": "status", "value": "={{ ($json.data || []).filter(x => Object.keys(x).length).length > 0 ? 'success' : 'not_found' }}", "type": "string" },
+            { "id": "s2", "name": "worker", "value": "COMBUSTIBLE", "type": "string" },
+            { "id": "s3", "name": "data", "value": "={{ $json.data || [] }}", "type": "array" },
+            { "id": "s4", "name": "message", "value": "={{ ($json.data || []).filter(x => Object.keys(x).length).length > 0 ? 'OK' : 'El identificador consultado no figura en los registros oficiales.' }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b2000002-0000-4000-8000-000000000006",
+      "name": "Contrato Salida OK",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1140, -100]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "e1", "name": "status", "value": "error", "type": "string" },
+            { "id": "e2", "name": "worker", "value": "COMBUSTIBLE", "type": "string" },
+            { "id": "e3", "name": "data", "value": "={{ [] }}", "type": "array" },
+            { "id": "e4", "name": "message", "value": "=Fallo en Worker_Combustibles: {{ $json.error?.message || 'error de conexión con Google Sheets' }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b2000002-0000-4000-8000-000000000007",
+      "name": "Contrato Salida ERROR",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [480, 140]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": { "main": [[{ "node": "Leer Combustibles", "type": "main", "index": 0 }]] },
+    "Leer Combustibles": {
+      "main": [
+        [{ "node": "Filtrar Coincidencias", "type": "main", "index": 0 }],
+        [{ "node": "Contrato Salida ERROR", "type": "main", "index": 0 }]
+      ]
+    },
+    "Filtrar Coincidencias": { "main": [[{ "node": "Limitar a 5", "type": "main", "index": 0 }]] },
+    "Limitar a 5": { "main": [[{ "node": "Agrupar Resultado", "type": "main", "index": 0 }]] },
+    "Agrupar Resultado": { "main": [[{ "node": "Contrato Salida OK", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "executionTimeout": 60 }
+}

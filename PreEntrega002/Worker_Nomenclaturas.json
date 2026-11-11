@@ -1,0 +1,282 @@
+{
+  "name": "Worker_Nomenclaturas",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "consulta"
+            },
+            {
+              "name": "identificador"
+            },
+            {
+              "name": "session_id"
+            }
+          ]
+        }
+      },
+      "id": "50ec7473-5b11-4195-91e9-5430148ac59f",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1q9Q897bU5VtfuWRl6LI65SpE36UbvmReosGTSo3_h3Y",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1545407219,
+          "mode": "list",
+          "cachedResultName": "NOMENCLATURAS ID"
+        },
+        "options": {}
+      },
+      "id": "6b423d96-ae87-4c70-8e0c-d9d82eac7380",
+      "name": "Leer Nomenclaturas",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        240,
+        112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OtSgOe70fxSSnGp6",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "f1000001-0000-4000-8000-000000000001",
+              "leftValue": "={{ $('Execute Workflow Trigger').first().json.identificador !== '' && JSON.stringify($json).toLowerCase().includes($('Execute Workflow Trigger').first().json.identificador.toLowerCase()) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "cde03911-7839-4b07-90bc-d627ce810a43",
+      "name": "Filtrar Coincidencias",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "maxItems": 5
+      },
+      "id": "863ed445-bf7b-458a-9a11-b99ccbf1f2f4",
+      "name": "Limitar a 5",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        704,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "eaf7b12c-c833-4c3a-ab2f-9ff41263428a",
+      "name": "Agrupar Resultado",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        928,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "status",
+              "value": "={{ ($json.data || []).filter(x => Object.keys(x).length).length > 0 ? 'success' : 'not_found' }}",
+              "type": "string"
+            },
+            {
+              "id": "s2",
+              "name": "worker",
+              "value": "NOMENCLATURA",
+              "type": "string"
+            },
+            {
+              "id": "s3",
+              "name": "data",
+              "value": "={{ $json.data || [] }}",
+              "type": "array"
+            },
+            {
+              "id": "s4",
+              "name": "message",
+              "value": "={{ ($json.data || []).filter(x => Object.keys(x).length).length > 0 ? 'OK' : 'El identificador consultado no figura en los registros oficiales.' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f34cd615-8e0a-4281-9a0a-0e7ed5c2c7a1",
+      "name": "Contrato Salida OK",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1152,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e1",
+              "name": "status",
+              "value": "error",
+              "type": "string"
+            },
+            {
+              "id": "e2",
+              "name": "worker",
+              "value": "NOMENCLATURA",
+              "type": "string"
+            },
+            {
+              "id": "e3",
+              "name": "data",
+              "value": "={{ [] }}",
+              "type": "array"
+            },
+            {
+              "id": "e4",
+              "name": "message",
+              "value": "=Fallo en Worker_Nomenclaturas: {{ $json.error?.message || 'error de conexión con Google Sheets' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e3b16faf-fa82-497a-86dc-1e973535b821",
+      "name": "Contrato Salida ERROR",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        240
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Leer Nomenclaturas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer Nomenclaturas": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Coincidencias",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contrato Salida ERROR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Coincidencias": {
+      "main": [
+        [
+          {
+            "node": "Limitar a 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limitar a 5": {
+      "main": [
+        [
+          {
+            "node": "Agrupar Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrupar Resultado": {
+      "main": [
+        [
+          {
+            "node": "Contrato Salida OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "27f9fbbf-f468-4ed2-877f-a63fb56a9f7b",
+  "meta": {
+    "instanceId": "2087e490eca5cfa34da356f3a5a262cb0753f43d234a0f4f2b530d5be51e43b2"
+  },
+  "nodeGroups": [],
+  "id": "49PSkDXWp6pK9YPz",
+  "tags": []
+}
